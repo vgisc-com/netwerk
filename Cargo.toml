@@ -1,0 +1,17 @@
+[package]
+name = "netwerk"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+raptorq = "2.0.0"
+tokio = { version = "1.37.0", features = ["full"] }
+rand = "0.8.5"
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
