@@ -2,7 +2,7 @@
 use tokio::net::UdpSocket;
 use raptorq::Encoder;
 use rand::{Rng, thread_rng};
-use std::error::Error;
+use std::{error::Error, time::Instant};
 use tokio::time::{timeout, Duration};
 
 #[tokio::main]
@@ -22,23 +22,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .collect::<Vec<_>>();
 
         for packet in packets {
+            let start_time = Instant::now();
             socket.send_to(&packet, &dst).await?;
             println!("Packet sent to {} with {} bytes", dst, packet.len());
-        }
+        
 
-        let mut buffer = [0u8; 1024];
-        let result = timeout(Duration::from_secs(5), socket.recv_from(&mut buffer)).await;
+            let mut buffer = [0u8; 1024];
+            let result = timeout(Duration::from_secs(5), socket.recv_from(&mut buffer)).await;
 
-        match result {
-            Ok(Ok((size, src))) => {
-                if size >= 4 && buffer[..size] == *b"Pong" {
-                    println!("Received pong from {}", src);
-                } else {
-                    println!("Unexpected message from {}", src);
-                }
-            },
-            Ok(Err(e)) => println!("Failed to receive pong: {}", e),
-            Err(_) => println!("Timeout waiting for pong, retrying..."),
+            match result {
+                Ok(Ok((size, src))) => {
+                    if size >= 4 && buffer[..size] == *b"Pong" {
+                        let elapsed = start_time.elapsed();
+                        println!("Received pong from {} in {}ms", src, elapsed.as_millis());
+                    } else {
+                        println!("Unexpected message from {}", src);
+                    }
+                },
+                Ok(Err(e)) => println!("Failed to receive pong: {}", e),
+                Err(_) => println!("Timeout waiting for pong, retrying..."),
+            }
         }
     }
 }

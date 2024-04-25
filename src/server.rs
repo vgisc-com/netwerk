@@ -23,7 +23,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut data = Vec::new();
 
     while let Ok((size, src)) = socket.recv_from(&mut buffer).await {
-        println!("Received {} bytes from {}: {:?}", size, src, &buffer[..size]);
+        //println!("Received {} bytes from {}: {:?}", size, src, &buffer[..size]);
+        println!("Received {} bytes from {}", size, src);
         data.extend_from_slice(&buffer[..size]);
 
         while data.len() >= size {
